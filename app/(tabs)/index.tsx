@@ -1,14 +1,70 @@
-import { StyleSheet } from 'react-native';
+import Colors from "@/constants/Colors";
+import {
+  BarcodeScanningResult,
+  CameraView,
+  useCameraPermissions,
+} from "expo-camera";
+import { Button, StyleSheet, Text, View, StatusBar } from "react-native";
+import { Image } from "expo-image";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 
-import EditScreenInfo from '@/components/EditScreenInfo';
-import { Text, View } from '@/components/Themed';
+export default function App() {
+  const [permission, requestPermission] = useCameraPermissions();
 
-export default function TabOneScreen() {
+  const router = useRouter();
+  const [scanned, setScanned] = useState<boolean>(false);
+
+  function barCodeScanned(scanningResult: BarcodeScanningResult) {
+    setScanned(true);
+    router.push({
+      pathname: "/(modal)/addToCart",
+      params: { data: scanningResult.data }
+    });
+  }
+
+  useFocusEffect(function() {
+    setScanned(false);
+  });
+
+  if (!permission) {
+    return <View />;
+  }
+
+  if (!permission.granted) {
+    // Camera permissions are not granted yet.
+    return (
+      <View style={styles.container}>
+        <Text style={styles.message}>
+          We need your permission to show the camera
+        </Text>
+        <Button
+          color={Colors.primary}
+          onPress={requestPermission}
+          title="grant permission"
+        />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Tab One</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/(tabs)/index.tsx" />
+      <StatusBar barStyle="light-content" backgroundColor="transparent" />
+
+      <CameraView
+        style={styles.camera}
+        facing="back"
+        barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
+        onBarcodeScanned={scanned ? undefined : barCodeScanned}
+      >
+        <View style={styles.scanContainer}>
+          <Image
+            source={require("../../assets/images/scanner.svg")}
+            contentFit="cover"
+            style={{ width: 400, height: 400 }}
+          />
+        </View>
+      </CameraView>
     </View>
   );
 }
@@ -16,16 +72,19 @@ export default function TabOneScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: "center",
   },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
+  message: {
+    textAlign: "center",
+    paddingBottom: 10,
   },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
+  camera: {
+    flex: 1,
+  },
+  scanContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "transparent",
   },
 });
