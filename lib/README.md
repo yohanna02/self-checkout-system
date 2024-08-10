@@ -1,0 +1,1 @@
+### Create a file called ```firebaseConfig.ts``` for the firebase api data

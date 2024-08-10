@@ -42,3 +42,5 @@ expo-env.d.ts
 
 yarn.lock
 package-lock.json
+
+lib/firebaseConfig.ts
