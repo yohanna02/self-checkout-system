@@ -1,9 +1,13 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { User } from "firebase/auth";
 import "react-native-reanimated";
+import { auth } from "@/lib/firebase";
+import { ActivityIndicator } from "react-native";
+import Colors from "@/constants/Colors";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -18,6 +22,9 @@ export default function RootLayout() {
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
     ...FontAwesome.font,
   });
+  const [user, setUser] = useState<User | null>(null);
+  const [isReady, setIsReady] = useState(false);
+  const router = useRouter();
 
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.
   useEffect(() => {
@@ -30,19 +37,63 @@ export default function RootLayout() {
     }
   }, [loaded]);
 
+  function onAuthStateChanged(user: User | null) {
+    setIsReady(true);
+    setUser(user);
+
+    if (user) {
+      router.push("/(auth)/(tabs)")
+    }
+  }
+
+  useEffect(function () {
+    const authSubscriber = auth.onAuthStateChanged(onAuthStateChanged);
+    return authSubscriber;
+  }, []);
+
   if (!loaded) {
     return null;
   }
 
-  return <RootLayoutNav />;
+  if (!isReady) {
+    return (
+      <ActivityIndicator
+        style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        size={"large"}
+        color={Colors.primary}
+      />
+    );
+  }
+
+  return <RootLayoutNav user={user} />;
 }
 
-function RootLayoutNav() {
-
+function RootLayoutNav({ user }: { user: User | null }) {
   return (
     <Stack>
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="(modal)/addToCart" options={{ headerShown: true, presentation: "modal", title: "Add to Cart" }} />
+      <Stack.Screen
+        name="(auth)/(tabs)"
+        options={{ headerShown: false }}
+        redirect={user === null}
+      />
+      <Stack.Screen
+        name="(auth)/(modal)/addToCart"
+        options={{
+          headerShown: true,
+          presentation: "modal",
+          title: "Add to Cart",
+        }}
+        redirect={user === null}
+      />
+      <Stack.Screen
+        name="(auth)/manageStore"
+        options={{ title: "Manage Store" }}
+        redirect={user === null}
+      />
+      <Stack.Screen
+        name="(public)/login"
+        options={{ title: "Login/Register" }}
+      />
     </Stack>
   );
 }

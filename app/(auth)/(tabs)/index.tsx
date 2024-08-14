@@ -59,7 +59,7 @@ export default function App() {
       >
         <View style={styles.scanContainer}>
           <Image
-            source={require("../../assets/images/scanner.svg")}
+            source={require("@/assets/images/scanner.svg")}
             contentFit="cover"
             style={{ width: 400, height: 400 }}
           />
