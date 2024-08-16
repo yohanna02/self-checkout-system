@@ -8,6 +8,9 @@ import "react-native-reanimated";
 import { auth } from "@/lib/firebase";
 import { ActivityIndicator } from "react-native";
 import Colors from "@/constants/Colors";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient();
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -42,7 +45,7 @@ export default function RootLayout() {
     setUser(user);
 
     if (user) {
-      router.push("/(auth)/(tabs)")
+      router.push("/(auth)/(tabs)");
     }
   }
 
@@ -65,7 +68,11 @@ export default function RootLayout() {
     );
   }
 
-  return <RootLayoutNav user={user} />;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <RootLayoutNav user={user} />
+    </QueryClientProvider>
+  );
 }
 
 function RootLayoutNav({ user }: { user: User | null }) {
@@ -88,6 +95,10 @@ function RootLayoutNav({ user }: { user: User | null }) {
       <Stack.Screen
         name="(auth)/manageStore"
         options={{ title: "Manage Store" }}
+        redirect={user === null}
+      />
+      <Stack.Screen
+        name="(auth)/manageProduct"
         redirect={user === null}
       />
       <Stack.Screen

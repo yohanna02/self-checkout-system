@@ -7,7 +7,7 @@ import {
 import { Button, StyleSheet, Text, View, StatusBar } from "react-native";
 import { Image } from "expo-image";
 import { useFocusEffect, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function App() {
   const [permission, requestPermission] = useCameraPermissions();
