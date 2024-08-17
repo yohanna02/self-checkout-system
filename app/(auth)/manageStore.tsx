@@ -6,6 +6,8 @@ import {
   StyleSheet,
   ActivityIndicator,
   FlatList,
+  StatusBar,
+  RefreshControl,
 } from "react-native";
 import React from "react";
 import { AntDesign } from "@expo/vector-icons";
@@ -35,6 +37,7 @@ export default function manageStore() {
 
   return (
     <View style={{ flex: 1 }}>
+      <StatusBar barStyle="dark-content" backgroundColor="white" />
       {productsQuery.isLoading && (
         <ActivityIndicator
           color={Colors.primary}
@@ -48,14 +51,18 @@ export default function manageStore() {
       )}
       <FlatList
         data={productsQuery.data}
+        refreshControl={
+          <RefreshControl
+            refreshing={productsQuery.isFetching}
+            onRefresh={() => productsQuery.refetch()}
+            colors={[Colors.primary]}
+          />
+        }
         keyExtractor={({ id }) => id}
         renderItem={function ({ item }) {
           const product = item.data() as Product;
           return (
-            <Link
-              href={`/(auth)/manageProduct?id=${item.id}`}
-              asChild
-            >
+            <Link href={`/(auth)/manageProduct?id=${item.id}`} asChild>
               <TouchableOpacity style={styles.productListItem}>
                 <Image
                   source={{ uri: product.image_url }}
@@ -64,7 +71,7 @@ export default function manageStore() {
                 <View
                   style={{ flex: 1, justifyContent: "center", paddingLeft: 10 }}
                 >
-                  <Text style={{fontSize: 28}}>{product.name}</Text>
+                  <Text style={{ fontSize: 28 }}>{product.name}</Text>
                 </View>
               </TouchableOpacity>
             </Link>

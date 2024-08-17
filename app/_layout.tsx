@@ -45,6 +45,10 @@ export default function RootLayout() {
     setUser(user);
 
     if (user) {
+      if (user.email === "admin@checkout.com") {
+        router.push("/(auth)/profile");
+        return;
+      }
       router.push("/(auth)/(tabs)");
     }
   }

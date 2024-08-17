@@ -12,21 +12,30 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
   ActivityIndicator,
+  StatusBar,
 } from "react-native";
 import React, { useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import { AntDesign, Ionicons } from "@expo/vector-icons";
-import { Stack, useLocalSearchParams } from "expo-router";
+import { useRouter, Stack, useLocalSearchParams } from "expo-router";
 import { Image } from "expo-image";
-import { useQuery } from "@tanstack/react-query";
-import { doc, getDoc } from "firebase/firestore";
-import { store } from "@/lib/firebase";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { storage, store } from "@/lib/firebase";
 import Colors from "@/constants/Colors";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import QRCode from "react-native-qrcode-svg";
 
 export default function manageProduct() {
   const [image, setImage] = useState<string | null>(null);
   const params = useLocalSearchParams<{ id: string }>();
   const { width, height } = useWindowDimensions();
+  const router = useRouter();
+
+  const [productName, setProductName] = useState("");
+  const [productPrice, setProductPrice] = useState("");
+  const [productQuantity, setProductQuantity] = useState("");
+  const [productDescription, setProductDescription] = useState("");
 
   const productQuery = useQuery({
     queryKey: ["products", params.id],
@@ -41,7 +50,83 @@ export default function manageProduct() {
       const product = productSnap.data();
 
       setImage(product.image_url);
+      setProductName(product.name);
+      setProductQuantity(product.quantity.toString());
+      setProductPrice(product.price.toString());
+      setProductDescription(product.description);
       return product;
+    },
+  });
+
+  function generateId(length: number) {
+    let result = "";
+    const characters =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    const charactersLength = characters.length;
+    for (let i = 0; i < length; i++) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return `ref_${result}`;
+  }
+
+  async function uploadImageAsync(uri: string) {
+    // Why are we using XMLHttpRequest? See:
+    // https://github.com/expo/expo/issues/2402#issuecomment-443726662
+    const blob: any = await new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.onload = function () {
+        resolve(xhr.response);
+      };
+      xhr.onerror = function (e) {
+        console.log(e);
+        reject(new TypeError("Network request failed"));
+      };
+      xhr.responseType = "blob";
+      xhr.open("GET", uri, true);
+      xhr.send(null);
+    });
+
+    const file = params.id === "new" ? generateId(10) : params.id;
+    const fileRef = ref(storage, file);
+    await uploadBytes(fileRef, blob);
+
+    // We're done with the blob, close and release it
+    blob.close();
+
+    return { url: await getDownloadURL(fileRef), file };
+  }
+
+  const saveProduct = useMutation({
+    mutationFn: async function () {
+      if (!image) throw new Error("No Image selected");
+      if (
+        !productName ||
+        !productPrice ||
+        !productQuantity ||
+        !productDescription
+      )
+        throw new Error("Field Empty");
+
+      const uploadResult = await uploadImageAsync(image);
+
+      await setDoc(doc(store, "products", uploadResult.file), {
+        name: productName,
+        price: parseFloat(productPrice),
+        quantity: parseInt(productQuantity),
+        description: productDescription,
+        image_url: uploadResult.url,
+      });
+
+      return uploadResult.file;
+    },
+    onSuccess: function (ref) {
+      router.replace({
+        pathname: "/(auth)/manageProduct",
+        params: { id: ref },
+      });
+    },
+    onError: function (e) {
+      alert(e.message);
     },
   });
 
@@ -69,6 +154,7 @@ export default function manageProduct() {
         keyboardVerticalOffset={100}
         style={{ flex: 1 }}
       >
+        <StatusBar barStyle="dark-content" backgroundColor="white" />
         <Stack.Screen
           options={{
             title: params.id === "new" ? "Add new product" : "Manage product",
@@ -114,20 +200,46 @@ export default function manageProduct() {
 
             <View style={{ marginTop: 10, marginHorizontal: 10 }}>
               <Text>Name</Text>
-              <TextInput style={styles.textInput} />
+              <TextInput
+                style={styles.textInput}
+                value={productName}
+                onChangeText={setProductName}
+              />
             </View>
             <View style={{ marginTop: 10, marginHorizontal: 10 }}>
               <Text>Price</Text>
-              <TextInput style={styles.textInput} keyboardType="number-pad" />
+              <TextInput
+                style={styles.textInput}
+                keyboardType="number-pad"
+                value={productPrice}
+                onChangeText={setProductPrice}
+              />
             </View>
             <View style={{ marginTop: 10, marginHorizontal: 10 }}>
               <Text>Quantity</Text>
-              <TextInput style={styles.textInput} keyboardType="number-pad" />
+              <TextInput
+                style={styles.textInput}
+                keyboardType="number-pad"
+                value={productQuantity}
+                onChangeText={setProductQuantity}
+              />
             </View>
             <View style={{ marginTop: 10, marginHorizontal: 10 }}>
               <Text>Description</Text>
-              <TextInput style={styles.textInput} multiline />
+              <TextInput
+                style={[styles.textInput, { height: "auto", textAlignVertical: "top" }]}
+                multiline={true}
+                numberOfLines={8}
+                value={productDescription}
+                onChangeText={setProductDescription}
+              />
             </View>
+
+            {params.id !== "new" && (
+              <View style={{marginVertical: 20, alignItems: "center"}}>
+                <QRCode value={params.id} />
+              </View>
+            )}
 
             <TouchableOpacity
               style={{
@@ -137,8 +249,11 @@ export default function manageProduct() {
                 borderRadius: 10,
                 alignItems: "center",
               }}
+              onPress={() => saveProduct.mutate()}
             >
-              <Text style={{ color: "white" }}>Save</Text>
+              <Text style={{ color: "white" }}>
+                {saveProduct.isPending ? "Saving..." : "Save"}
+              </Text>
             </TouchableOpacity>
           </ScrollView>
         )}
