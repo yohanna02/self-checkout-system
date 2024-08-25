@@ -13,6 +13,7 @@ import {
   TouchableWithoutFeedback,
   ActivityIndicator,
   StatusBar,
+  Alert,
 } from "react-native";
 import React, { useState } from "react";
 import * as ImagePicker from "expo-image-picker";
@@ -20,11 +21,15 @@ import { AntDesign, Ionicons } from "@expo/vector-icons";
 import { useRouter, Stack, useLocalSearchParams } from "expo-router";
 import { Image } from "expo-image";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { deleteDoc, doc, getDoc, setDoc } from "firebase/firestore";
 import { storage, store } from "@/lib/firebase";
 import Colors from "@/constants/Colors";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import QRCode from "react-native-qrcode-svg";
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject,
+} from "firebase/storage";
 
 export default function manageProduct() {
   const [image, setImage] = useState<string | null>(null);
@@ -147,6 +152,42 @@ export default function manageProduct() {
       setImage(result.assets[0].uri);
     }
   }
+
+  async function deleteProduct() {
+    // Delete product
+    try {
+      Alert.alert(
+        "Delete Product",
+        "Are you sure you want to delete this product?",
+        [
+          {
+            text: "Cancel",
+            style: "cancel",
+          },
+          {
+            text: "Delete",
+            onPress: async () => {
+              await deleteDoc(doc(store, "products", params.id));
+              const imageRef = ref(storage, params.id);
+              await deleteObject(imageRef);
+              Alert.alert("Success", "Product deleted successfully");
+              router.replace("/(auth)/manageStore");
+            },
+          },
+        ]
+      );
+    } catch (error) {
+      Alert.alert("Error", "Failed to delete product");
+    }
+  }
+
+  function goToSaveQrCode() {
+    router.push({
+      pathname: "/(auth)/saveQrCode",
+      params: { id: params.id, name: productName },
+    });
+  }
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <KeyboardAvoidingView
@@ -160,7 +201,9 @@ export default function manageProduct() {
             title: params.id === "new" ? "Add new product" : "Manage product",
             headerRight: () =>
               params.id !== "new" ? (
-                <AntDesign name="delete" size={24} color="red" />
+                <TouchableOpacity onPress={deleteProduct}>
+                  <AntDesign name="delete" size={24} color="red" />
+                </TouchableOpacity>
               ) : null,
           }}
         />
@@ -227,7 +270,10 @@ export default function manageProduct() {
             <View style={{ marginTop: 10, marginHorizontal: 10 }}>
               <Text>Description</Text>
               <TextInput
-                style={[styles.textInput, { height: "auto", textAlignVertical: "top" }]}
+                style={[
+                  styles.textInput,
+                  { height: "auto", textAlignVertical: "top" },
+                ]}
                 multiline={true}
                 numberOfLines={8}
                 value={productDescription}
@@ -236,8 +282,28 @@ export default function manageProduct() {
             </View>
 
             {params.id !== "new" && (
-              <View style={{marginVertical: 20, alignItems: "center"}}>
-                <QRCode value={params.id} />
+              <View
+                style={{
+                  marginVertical: 20,
+                  alignItems: "center",
+                  width: "100%",
+                }}
+              >
+                <TouchableOpacity
+                  style={{
+                    backgroundColor: "white",
+                    borderColor: Colors.primary,
+                    borderWidth: 1,
+                    padding: 10,
+                    margin: 10,
+                    borderRadius: 10,
+                    alignItems: "center",
+                    width: "95%",
+                  }}
+                  onPress={goToSaveQrCode}
+                >
+                  <Text>Save QR Code</Text>
+                </TouchableOpacity>
               </View>
             )}
 

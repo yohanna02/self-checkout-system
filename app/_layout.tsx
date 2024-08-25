@@ -106,6 +106,10 @@ function RootLayoutNav({ user }: { user: User | null }) {
         redirect={user === null}
       />
       <Stack.Screen
+        name="(auth)/saveQrCode"
+        redirect={user === null}
+      />
+      <Stack.Screen
         name="(public)/login"
         options={{ title: "Login/Register" }}
       />
