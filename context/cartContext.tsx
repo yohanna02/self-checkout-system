@@ -37,13 +37,11 @@ const CartContextProvider: React.FC<{ children: React.ReactNode }> = ({
   const cartQuery = useQuery({
     queryKey: ["carts"],
     queryFn: async function () {
-      console.log("hello");
       const ref = query(
         collection(store, "carts"),
         where("userId", "==", auth.currentUser?.uid)
       );
       const snap = await getDocs(ref);
-      console.log("auth", auth.currentUser?.uid);
 
       const cartItems: CartItemType[] = [];
       for (const cartItem of snap.docs) {
@@ -57,7 +55,6 @@ const CartContextProvider: React.FC<{ children: React.ReactNode }> = ({
           imageUrl: product.data()?.image_url as string,
         });
       }
-      console.log("cart", cartItems);
       return cartItems;
     },
   });
