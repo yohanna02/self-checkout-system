@@ -9,6 +9,7 @@ import { auth } from "@/lib/firebase";
 import { ActivityIndicator } from "react-native";
 import Colors from "@/constants/Colors";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import CartContextProvider from "@/context/cartContext";
 
 const queryClient = new QueryClient();
 
@@ -74,7 +75,9 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <RootLayoutNav user={user} />
+      <CartContextProvider>
+        <RootLayoutNav user={user} />
+      </CartContextProvider>
     </QueryClientProvider>
   );
 }
@@ -101,14 +104,8 @@ function RootLayoutNav({ user }: { user: User | null }) {
         options={{ title: "Manage Store" }}
         redirect={user === null}
       />
-      <Stack.Screen
-        name="(auth)/manageProduct"
-        redirect={user === null}
-      />
-      <Stack.Screen
-        name="(auth)/saveQrCode"
-        redirect={user === null}
-      />
+      <Stack.Screen name="(auth)/manageProduct" redirect={user === null} />
+      <Stack.Screen name="(auth)/saveQrCode" redirect={user === null} />
       <Stack.Screen
         name="(public)/login"
         options={{ title: "Login/Register" }}

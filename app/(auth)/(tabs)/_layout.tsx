@@ -1,14 +1,19 @@
-import React from "react";
+import { useContext } from "react";
 import { Tabs } from "expo-router";
-import {Ionicons} from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import Colors from "@/constants/Colors";
+import { cartContext } from "@/context/cartContext";
 
 export default function TabLayout() {
 
+  const { cartData } = useContext(cartContext);
+
   return (
-    <Tabs screenOptions={{
-      tabBarActiveTintColor: Colors.primary
-    }}>
+    <Tabs
+      screenOptions={{
+        tabBarActiveTintColor: Colors.primary,
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
@@ -19,7 +24,7 @@ export default function TabLayout() {
               return <Ionicons name="home-outline" size={size} color={color} />;
             }
 
-            return <Ionicons name="home" size={size} color={color} />
+            return <Ionicons name="home" size={size} color={color} />;
           },
         }}
       />
@@ -29,7 +34,7 @@ export default function TabLayout() {
         options={{
           headerShown: true,
           title: "Cart",
-          tabBarBadge: 0,
+          tabBarBadge: cartData?.length || 0,
           tabBarBadgeStyle: {
             backgroundColor: "#BDB171",
             color: "white",
@@ -39,7 +44,7 @@ export default function TabLayout() {
               return <Ionicons name="cart-outline" size={size} color={color} />;
             }
 
-            return <Ionicons name="cart" size={size} color={color} />
+            return <Ionicons name="cart" size={size} color={color} />;
           },
         }}
       />
@@ -51,10 +56,12 @@ export default function TabLayout() {
           title: "Profile",
           tabBarIcon: ({ color, focused, size }) => {
             if (!focused) {
-              return <Ionicons name="person-outline" size={size} color={color} />;
+              return (
+                <Ionicons name="person-outline" size={size} color={color} />
+              );
             }
 
-            return <Ionicons name="person" size={size} color={color} />
+            return <Ionicons name="person" size={size} color={color} />;
           },
         }}
       />

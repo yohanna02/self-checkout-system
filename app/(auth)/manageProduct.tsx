@@ -30,6 +30,7 @@ import {
   getDownloadURL,
   deleteObject,
 } from "firebase/storage";
+import generateId from "@/util/generateId";
 
 export default function manageProduct() {
   const [image, setImage] = useState<string | null>(null);
@@ -62,17 +63,6 @@ export default function manageProduct() {
       return product;
     },
   });
-
-  function generateId(length: number) {
-    let result = "";
-    const characters =
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    const charactersLength = characters.length;
-    for (let i = 0; i < length; i++) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    }
-    return `ref_${result}`;
-  }
 
   async function uploadImageAsync(uri: string) {
     // Why are we using XMLHttpRequest? See:
