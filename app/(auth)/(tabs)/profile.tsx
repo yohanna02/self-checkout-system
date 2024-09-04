@@ -10,15 +10,16 @@ import {
 import React from "react";
 import { Link, useRouter } from "expo-router";
 import {
-  AntDesign,
   Feather,
   Ionicons,
   MaterialIcons,
 } from "@expo/vector-icons";
 import { auth } from "@/lib/firebase";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function profile() {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   function handleLogout() {
     Alert.alert("Logout", "Are you sure you want to logout?", [
@@ -26,6 +27,7 @@ export default function profile() {
       {
         text: "OK",
         onPress: async () => {
+          queryClient.clear();
           await auth.signOut();
           router.replace("/");
         },
