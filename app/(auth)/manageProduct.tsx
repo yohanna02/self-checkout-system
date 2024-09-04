@@ -155,6 +155,7 @@ export default function manageProduct() {
           },
           {
             text: "Delete",
+            style: "destructive",
             onPress: async () => {
               await deleteDoc(doc(store, "products", params.id));
               const imageRef = ref(storage, params.id);

@@ -4,17 +4,20 @@ import { CartItemType } from "@/context/cartContext";
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Image } from "expo-image";
+import { AntDesign } from "@expo/vector-icons";
 
 const CartItem = ({
   item,
   index,
   onIncrease,
   onDecrease,
+  deleteItem
 }: {
   item: CartItemType;
   index: number;
-  onIncrease: (id: string, index: number) => void;
-  onDecrease: (id: string, index: number) => void;
+  onIncrease: (index: number) => void;
+  onDecrease: (index: number) => void;
+  deleteItem: (index: number) => void;
 }) => {
   return (
     <View style={styles.cartItem}>
@@ -23,20 +26,27 @@ const CartItem = ({
         <Text style={styles.itemName}>{item.name}</Text>
         <Text style={styles.itemPrice}>₦{item.price.toFixed(2)}</Text>
       </View>
-      <View style={styles.quantityContainer}>
-        <TouchableOpacity
-          onPress={() => onDecrease(item.id, index)}
-          style={styles.quantityButton}
-        >
-          <Text style={styles.quantityButtonText}>-</Text>
-        </TouchableOpacity>
-        <Text style={styles.quantityText}>{item.quantity}</Text>
-        <TouchableOpacity
-          onPress={() => onIncrease(item.id, index)}
-          style={styles.quantityButton}
-        >
-          <Text style={styles.quantityButtonText}>+</Text>
-        </TouchableOpacity>
+      <View style={styles.secondContainer}>
+        <View style={styles.quantityContainer}>
+          <TouchableOpacity
+            onPress={() => onDecrease(index)}
+            style={styles.quantityButton}
+          >
+            <Text style={styles.quantityButtonText}>-</Text>
+          </TouchableOpacity>
+          <Text style={styles.quantityText}>{item.quantity}</Text>
+          <TouchableOpacity
+            onPress={() => onIncrease(index)}
+            style={styles.quantityButton}
+          >
+            <Text style={styles.quantityButtonText}>+</Text>
+          </TouchableOpacity>
+        </View>
+        <View>
+          <TouchableOpacity onPress={() => deleteItem(index)}>
+            <AntDesign name="delete" size={20} color="red" />
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -57,8 +67,8 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   itemImage: {
-    width: 60,
-    height: 60,
+    width: 80,
+    height: 80,
     marginRight: 16,
     borderRadius: 8,
   },
@@ -75,6 +85,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#888",
     marginBottom: 8,
+  },
+  secondContainer: {
+    height: 80,
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   quantityContainer: {
     flexDirection: "row",

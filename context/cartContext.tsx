@@ -12,6 +12,7 @@ import { auth, store } from "@/lib/firebase";
 
 export interface CartItemType {
   id: string;
+  product_id: string;
   name: string;
   price: number;
   quantity: number;
@@ -43,18 +44,20 @@ const CartContextProvider: React.FC<{ children: React.ReactNode }> = ({
       );
       const snap = await getDocs(ref);
 
-      const cartItems: CartItemType[] = [];
-      for (const cartItem of snap.docs) {
+      const cartItemsPromises = snap.docs.map(async (cartItem) => {
         const data = cartItem.data();
         const product = await getDoc(doc(store, "products", data.productId));
-        cartItems.push({
+        return {
           id: cartItem.id as string,
+          product_id: product.id,
           name: product.data()?.name as string,
           price: product.data()?.price as number,
           quantity: data.quantity as number,
           imageUrl: product.data()?.image_url as string,
-        });
-      }
+        };
+      });
+
+      const cartItems = await Promise.all(cartItemsPromises);
       return cartItems;
     },
   });
@@ -65,7 +68,7 @@ const CartContextProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(
     function () {
-      if (cartQuery.isLoading) {
+      if (cartQuery.isLoading || cartQuery.isFetching) {
         setStatus("loading");
       } else if (cartQuery.isError) {
         setStatus("error");

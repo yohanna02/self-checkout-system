@@ -19,7 +19,7 @@ export default function App() {
     setScanned(true);
     router.push({
       pathname: "/(modal)/addToCart",
-      params: { data: scanningResult.data }
+      params: { data: encodeURI(scanningResult.data) },
     });
   }
 
