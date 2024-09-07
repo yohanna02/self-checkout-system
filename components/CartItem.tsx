@@ -11,13 +11,13 @@ const CartItem = ({
   index,
   onIncrease,
   onDecrease,
-  deleteItem
+  deleteItem,
 }: {
   item: CartItemType;
-  index: number;
-  onIncrease: (index: number) => void;
-  onDecrease: (index: number) => void;
-  deleteItem: (index: number) => void;
+  index?: number;
+  onIncrease?: (index: number) => void;
+  onDecrease?: (index: number) => void;
+  deleteItem?: (index: number) => void;
 }) => {
   return (
     <View style={styles.cartItem}>
@@ -26,28 +26,40 @@ const CartItem = ({
         <Text style={styles.itemName}>{item.name}</Text>
         <Text style={styles.itemPrice}>₦{item.price.toFixed(2)}</Text>
       </View>
-      <View style={styles.secondContainer}>
-        <View style={styles.quantityContainer}>
-          <TouchableOpacity
-            onPress={() => onDecrease(index)}
-            style={styles.quantityButton}
-          >
-            <Text style={styles.quantityButtonText}>-</Text>
-          </TouchableOpacity>
-          <Text style={styles.quantityText}>{item.quantity}</Text>
-          <TouchableOpacity
-            onPress={() => onIncrease(index)}
-            style={styles.quantityButton}
-          >
-            <Text style={styles.quantityButtonText}>+</Text>
-          </TouchableOpacity>
+      {onIncrease !== undefined &&
+      onDecrease !== undefined &&
+      deleteItem !== undefined &&
+      index !== undefined ? (
+        <View style={styles.secondContainer}>
+          <View style={styles.quantityContainer}>
+            <TouchableOpacity
+              onPress={() => onDecrease(index)}
+              style={styles.quantityButton}
+            >
+              <Text style={styles.quantityButtonText}>-</Text>
+            </TouchableOpacity>
+            <Text style={styles.quantityText}>{item.quantity}</Text>
+            <TouchableOpacity
+              onPress={() => onIncrease(index)}
+              style={styles.quantityButton}
+            >
+              <Text style={styles.quantityButtonText}>+</Text>
+            </TouchableOpacity>
+          </View>
+          <View>
+            <TouchableOpacity onPress={() => deleteItem(index)}>
+              <AntDesign name="delete" size={20} color="red" />
+            </TouchableOpacity>
+          </View>
         </View>
-        <View>
-          <TouchableOpacity onPress={() => deleteItem(index)}>
-            <AntDesign name="delete" size={20} color="red" />
-          </TouchableOpacity>
+      ) : (
+        <View style={styles.secondContainer}>
+          <Text style={styles.quantityText}>Quantity: {item.quantity}</Text>
+          <Text style={styles.quantityText}>
+            ₦{(item.price * item.quantity).toFixed(2)}
+          </Text>
         </View>
-      </View>
+      )}
     </View>
   );
 };

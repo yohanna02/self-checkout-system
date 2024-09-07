@@ -47,10 +47,10 @@ export default function RootLayout() {
 
     if (user) {
       if (user.email === "admin@checkout.com") {
-        router.push("/(auth)/profile");
+        router.replace("/(auth)/profile");
         return;
       }
-      router.push("/(auth)/(tabs)");
+      router.replace("/(auth)/(tabs)");
     }
   }
 
@@ -106,6 +106,8 @@ function RootLayoutNav({ user }: { user: User | null }) {
       />
       <Stack.Screen name="(auth)/manageProduct" redirect={user === null} />
       <Stack.Screen name="(auth)/saveQrCode" redirect={user === null} />
+      <Stack.Screen name="(auth)/(orders)/order" redirect={user === null} options={{title: "Orders"}} />
+      <Stack.Screen name="(auth)/(orders)/[id]" redirect={user === null} options={{title: "Orders List"}} />
       <Stack.Screen
         name="(public)/login"
         options={{ title: "Login/Register" }}

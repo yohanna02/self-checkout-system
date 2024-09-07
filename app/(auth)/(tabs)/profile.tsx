@@ -9,11 +9,7 @@ import {
 } from "react-native";
 import React from "react";
 import { Link, useRouter } from "expo-router";
-import {
-  Feather,
-  Ionicons,
-  MaterialIcons,
-} from "@expo/vector-icons";
+import { Feather, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { auth } from "@/lib/firebase";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -44,12 +40,18 @@ export default function profile() {
         </Text>
 
         <View style={{ marginTop: 10 }}>
-          <Link href="/" asChild>
+          <Link href="/(auth)/(orders)/order" asChild>
             <TouchableOpacity style={styles.btn}>
-              <Feather name="lock" size={28} color="black" />
+              <Feather name="shopping-cart" size={28} color="black" />
               <View>
-                <Text style={styles.btnTextBig}>Change password</Text>
-                <Text style={styles.btnTextSmall}>Secure your account</Text>
+                <Text style={styles.btnTextBig}>Orders</Text>
+                {auth.currentUser?.email === "admin@checkout.com" ? (
+                  <Text style={styles.btnTextSmall}>
+                    See your customers Orders
+                  </Text>
+                ) : (
+                  <Text>See all your order</Text>
+                )}
               </View>
               <MaterialIcons
                 name="arrow-forward-ios"

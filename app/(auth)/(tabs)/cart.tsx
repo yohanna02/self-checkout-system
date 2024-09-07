@@ -217,7 +217,7 @@ export default function cart() {
         onPress={checkout}
       >
         <Text style={{ color: "white", textAlign: "center" }}>
-          {checkoutMutation.isPending ? <ActivityIndicator size="small" color={Colors.primary} /> : "Checkout"}
+          {checkoutMutation.isPending ? <ActivityIndicator size="small" color={"white"} /> : "Checkout"}
         </Text>
       </TouchableOpacity>
     </View>
