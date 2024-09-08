@@ -129,7 +129,22 @@ export default function manageProduct() {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: true,
-      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      if (result.assets[0].type !== "image") {
+        alert("Please select an image");
+        return;
+      }
+      setImage(result.assets[0].uri);
+    }
+  }
+
+  async function useCamera() {
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
       quality: 1,
     });
 
@@ -229,6 +244,21 @@ export default function manageProduct() {
                   <Text style={{ color: Colors.primary }}>Select an image</Text>
                 </>
               )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={useCamera}
+              style={{
+                backgroundColor: Colors.primary,
+                padding: 10,
+                margin: 10,
+                borderRadius: 10,
+                alignItems: "center",
+              }}
+            >
+              <Text style={{ textAlign: "center", color: "white" }}>
+                Use Camera
+              </Text>
             </TouchableOpacity>
 
             <View style={{ marginTop: 10, marginHorizontal: 10 }}>
