@@ -87,7 +87,7 @@ function RootLayoutNav({ user }: { user: User | null }) {
     <Stack>
       <Stack.Screen
         name="(auth)/(tabs)"
-        options={{ headerShown: false }}
+        options={{ headerShown: false, headerBackTitleVisible: false }}
         redirect={user === null}
       />
       <Stack.Screen
@@ -96,21 +96,38 @@ function RootLayoutNav({ user }: { user: User | null }) {
           headerShown: true,
           presentation: "modal",
           title: "Add to Cart",
+          headerBackTitleVisible: false,
         }}
         redirect={user === null}
       />
       <Stack.Screen
         name="(auth)/manageStore"
-        options={{ title: "Manage Store" }}
+        options={{ title: "Manage Store", headerBackTitleVisible: false }}
         redirect={user === null}
       />
-      <Stack.Screen name="(auth)/manageProduct" redirect={user === null} />
-      <Stack.Screen name="(auth)/saveQrCode" redirect={user === null} />
-      <Stack.Screen name="(auth)/(orders)/order" redirect={user === null} options={{title: "Orders"}} />
-      <Stack.Screen name="(auth)/(orders)/[id]" redirect={user === null} options={{title: "Orders List"}} />
+      <Stack.Screen
+        name="(auth)/manageProduct"
+        redirect={user === null}
+        options={{ headerBackTitleVisible: false }}
+      />
+      <Stack.Screen
+        name="(auth)/saveQrCode"
+        redirect={user === null}
+        options={{ headerBackTitleVisible: false }}
+      />
+      <Stack.Screen
+        name="(auth)/(orders)/order"
+        redirect={user === null}
+        options={{ title: "Orders", headerBackTitleVisible: false }}
+      />
+      <Stack.Screen
+        name="(auth)/(orders)/[id]"
+        redirect={user === null}
+        options={{ title: "Orders List", headerBackTitleVisible: false }}
+      />
       <Stack.Screen
         name="(public)/login"
-        options={{ title: "Login/Register" }}
+        options={{ title: "Login/Register", headerBackTitleVisible: false }}
       />
     </Stack>
   );
