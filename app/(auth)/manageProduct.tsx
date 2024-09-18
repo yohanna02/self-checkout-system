@@ -18,7 +18,13 @@ import {
 import React, { useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import { AntDesign, Ionicons } from "@expo/vector-icons";
-import { useRouter, Stack, useLocalSearchParams } from "expo-router";
+import {
+  useRouter,
+  Stack,
+  useLocalSearchParams,
+  Link,
+  useFocusEffect,
+} from "expo-router";
 import { Image } from "expo-image";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { deleteDoc, doc, getDoc, setDoc } from "firebase/firestore";
@@ -30,18 +36,25 @@ import {
   getDownloadURL,
   deleteObject,
 } from "firebase/storage";
-import generateId from "@/util/generateId";
+// import generateId from "@/util/generateId";
 
 export default function manageProduct() {
   const [image, setImage] = useState<string | null>(null);
-  const params = useLocalSearchParams<{ id: string }>();
+  const params = useLocalSearchParams<{ id: string; code?: string }>();
   const { width, height } = useWindowDimensions();
   const router = useRouter();
 
+  const [productCode, setProductCode] = useState("");
   const [productName, setProductName] = useState("");
   const [productPrice, setProductPrice] = useState("");
   const [productQuantity, setProductQuantity] = useState("");
   const [productDescription, setProductDescription] = useState("");
+
+  useFocusEffect(function () {
+    if (params.code) {
+      setProductCode(params.code);
+    }
+  });
 
   const productQuery = useQuery({
     queryKey: ["products", params.id],
@@ -55,6 +68,7 @@ export default function manageProduct() {
 
       const product = productSnap.data();
 
+      setProductCode(params.id);
       setImage(product.image_url);
       setProductName(product.name);
       setProductQuantity(product.quantity.toString());
@@ -80,7 +94,7 @@ export default function manageProduct() {
       xhr.send(null);
     });
 
-    const file = params.id === "new" ? generateId(10) : params.id;
+    const file = params.id === "new" ? productCode : params.id;
     const fileRef = ref(storage, file);
     await uploadBytes(fileRef, blob);
 
@@ -94,6 +108,7 @@ export default function manageProduct() {
     mutationFn: async function () {
       if (!image) throw new Error("No Image selected");
       if (
+        !productCode ||
         !productName ||
         !productPrice ||
         !productQuantity ||
@@ -186,13 +201,6 @@ export default function manageProduct() {
     }
   }
 
-  function goToSaveQrCode() {
-    router.push({
-      pathname: "/(auth)/saveQrCode",
-      params: { id: params.id, name: productName },
-    });
-  }
-
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <KeyboardAvoidingView
@@ -261,6 +269,28 @@ export default function manageProduct() {
               </Text>
             </TouchableOpacity>
 
+            <Link href="/(auth)/scanBarcode" asChild>
+              <TouchableOpacity
+                style={{
+                  backgroundColor: Colors.primary,
+                  padding: 10,
+                  margin: 10,
+                  borderRadius: 10,
+                  alignItems: "center",
+                }}
+              >
+                {productCode === "" ? (
+                  <Text style={{ textAlign: "center", color: "white" }}>
+                    Scan Barcode
+                  </Text>
+                ) : (
+                  <Text style={{ textAlign: "center", color: "white" }}>
+                    {productCode}
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </Link>
+
             <View style={{ marginTop: 10, marginHorizontal: 10 }}>
               <Text>Name</Text>
               <TextInput
@@ -295,37 +325,11 @@ export default function manageProduct() {
                   { height: "auto", textAlignVertical: "top" },
                 ]}
                 multiline={true}
-                numberOfLines={8}
+                numberOfLines={15}
                 value={productDescription}
                 onChangeText={setProductDescription}
               />
             </View>
-
-            {params.id !== "new" && (
-              <View
-                style={{
-                  marginVertical: 20,
-                  alignItems: "center",
-                  width: "100%",
-                }}
-              >
-                <TouchableOpacity
-                  style={{
-                    backgroundColor: "white",
-                    borderColor: Colors.primary,
-                    borderWidth: 1,
-                    padding: 10,
-                    margin: 10,
-                    borderRadius: 10,
-                    alignItems: "center",
-                    width: "95%",
-                  }}
-                  onPress={goToSaveQrCode}
-                >
-                  <Text>Save QR Code</Text>
-                </TouchableOpacity>
-              </View>
-            )}
 
             <TouchableOpacity
               style={{

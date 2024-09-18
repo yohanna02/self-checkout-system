@@ -111,9 +111,9 @@ function RootLayoutNav({ user }: { user: User | null }) {
         options={{ headerBackTitleVisible: false }}
       />
       <Stack.Screen
-        name="(auth)/saveQrCode"
+        name="(auth)/scanBarcode"
         redirect={user === null}
-        options={{ headerBackTitleVisible: false }}
+        options={{ title: "Scan Barcode", headerBackTitleVisible: false }}
       />
       <Stack.Screen
         name="(auth)/(orders)/order"

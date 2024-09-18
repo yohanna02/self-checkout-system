@@ -1,15 +1,14 @@
-import Colors from "@/constants/Colors";
+import { View, Text, StyleSheet, Button, StatusBar } from "react-native";
+import { useState } from "react";
 import {
   BarcodeScanningResult,
   CameraView,
   useCameraPermissions,
 } from "expo-camera";
-import { Button, StyleSheet, Text, View, StatusBar } from "react-native";
-import { Image } from "expo-image";
-import { useFocusEffect, useRouter } from "expo-router";
-import { useState } from "react";
+import { useRouter } from "expo-router";
+import Colors from "@/constants/Colors";
 
-export default function App() {
+export default function scanBarcode() {
   const [permission, requestPermission] = useCameraPermissions();
 
   const router = useRouter();
@@ -17,15 +16,11 @@ export default function App() {
 
   function barCodeScanned(scanningResult: BarcodeScanningResult) {
     setScanned(true);
-    router.push({
-      pathname: "/(modal)/addToCart",
-      params: { data: scanningResult.data },
-    });
+    if (router.canGoBack()) {
+      router.back();
+      router.setParams({ code: scanningResult.data });
+    }
   }
-
-  useFocusEffect(function() {
-    setScanned(false);
-  });
 
   if (!permission) {
     return <View />;
@@ -49,22 +44,14 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="transparent" />
+      <StatusBar barStyle="dark-content" backgroundColor="white" />
 
       <CameraView
         style={styles.camera}
         facing="back"
         barcodeScannerSettings={{ barcodeTypes: ["ean13", "upc_e", "upc_a"] }}
         onBarcodeScanned={scanned ? undefined : barCodeScanned}
-      >
-        <View style={styles.scanContainer}>
-          <Image
-            source={require("@/assets/images/scanner.svg")}
-            contentFit="cover"
-            style={{ width: 400, height: 400 }}
-          />
-        </View>
-      </CameraView>
+      ></CameraView>
     </View>
   );
 }

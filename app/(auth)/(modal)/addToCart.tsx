@@ -36,7 +36,7 @@ export default function addToCart() {
   const productQuery = useQuery({
     queryKey: ["product", data],
     queryFn: async function () {
-      const productRef = doc(store, "products", decodeURI(data));
+      const productRef = doc(store, "products", data);
       const productSnap = await getDoc(productRef);
       const ref = query(
         collection(store, "carts"),
