@@ -24,7 +24,7 @@ const CartItem = ({
       <Image source={item.imageUrl} style={styles.itemImage} />
       <View style={styles.itemDetails}>
         <Text style={styles.itemName}>{item.name}</Text>
-        <Text style={styles.itemPrice}>₦{item.price.toFixed(2)}</Text>
+        <Text style={styles.itemPrice}>₦{item.price?.toFixed(2)}</Text>
       </View>
       {onIncrease !== undefined &&
       onDecrease !== undefined &&

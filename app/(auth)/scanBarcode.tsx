@@ -7,6 +7,7 @@ import {
 } from "expo-camera";
 import { useRouter } from "expo-router";
 import Colors from "@/constants/Colors";
+import { Image } from "expo-image";
 
 export default function scanBarcode() {
   const [permission, requestPermission] = useCameraPermissions();
@@ -51,7 +52,15 @@ export default function scanBarcode() {
         facing="back"
         barcodeScannerSettings={{ barcodeTypes: ["ean13", "upc_e", "upc_a"] }}
         onBarcodeScanned={scanned ? undefined : barCodeScanned}
-      ></CameraView>
+      >
+        <View style={styles.scanContainer}>
+          <Image
+            source={require("@/assets/images/scanner.svg")}
+            contentFit="cover"
+            style={{ width: 400, height: 400 }}
+          />
+        </View>
+      </CameraView>
     </View>
   );
 }
