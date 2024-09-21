@@ -32,7 +32,9 @@ export default function cart() {
 
       await setDoc(doc(store, "orders", generateId(10)), {
         userId: auth.currentUser?.uid,
+        email: auth.currentUser?.email,
         products,
+        date: new Date().toISOString(),
       });
 
       await Promise.all(

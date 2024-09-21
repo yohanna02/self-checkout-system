@@ -5,6 +5,7 @@ import { store } from "@/lib/firebase";
 import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams } from "expo-router";
 import { doc, getDoc } from "firebase/firestore";
+import { useState } from "react";
 import {
   View,
   Text,
@@ -15,6 +16,8 @@ import {
 
 export default function OrderList() {
   const data = useLocalSearchParams<{ id: string }>();
+  const [total, setTotal] = useState(0);
+  const [totalItem, setTotalItem] = useState(0);
 
   const orderQuery = useQuery({
     queryKey: ["order", data.id],
@@ -40,6 +43,15 @@ export default function OrderList() {
       });
 
       const order = await Promise.all(orderPromises);
+
+      let tempTotal = 0;
+      let tempTotalItem = 0;
+      order.forEach(function(o) {
+        tempTotalItem += o.quantity;
+        tempTotal += (o.price * o.quantity);
+      });
+      setTotal(tempTotal);
+      setTotalItem(tempTotalItem);
 
       return order;
     },
@@ -68,7 +80,12 @@ export default function OrderList() {
             <CartItem item={order as CartItemType} />
           )}
         />
+
       )}
+      <View>
+        <Text style={{fontSize: 32, fontWeight: "bold"}}>Total: ₦{total}</Text>
+        <Text style={{fontSize: 32, fontWeight: "bold"}}>Total Quantity: {totalItem}</Text>
+      </View>
     </View>
   );
 }

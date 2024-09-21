@@ -32,6 +32,8 @@ export default function orders() {
         return {
           id: orderItem.id as string,
           numberOfItems: data.products.length as number,
+          date: `${new Date(data.date).toLocaleTimeString()} - ${new Date(data.date).toLocaleDateString()}` as string,
+          email: data.email as string,
         };
       });
 
@@ -62,9 +64,6 @@ export default function orders() {
             <Link href={`/(auth)/(orders)/${order.id}`} key={order.id} asChild>
               <TouchableOpacity
                 style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "space-between",
                   marginBottom: 16,
                   padding: 16,
                   backgroundColor: "#fff",
@@ -76,10 +75,13 @@ export default function orders() {
                   elevation: 2,
                 }}
               >
-                <Text>{order.id}</Text>
-                <Text style={{ fontWeight: "bold" }}>
-                  {order.numberOfItems}
-                </Text>
+                <Text>{order.email}</Text>
+                <View style={{justifyContent: "space-between", flexDirection: "row"}}>
+                  <Text>{order.date}</Text>
+                  <Text style={{ fontWeight: "bold" }}>
+                    Items - {order.numberOfItems}
+                  </Text>
+                </View>
               </TouchableOpacity>
             </Link>
           )}
