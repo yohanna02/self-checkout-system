@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
   RefreshControl,
 } from "react-native";
-import { useContext, useState } from "react";
+import { useContext, useState, useRef } from "react";
 import { cartContext } from "@/context/cartContext";
 import CartItem from "@/components/CartItem";
 import Colors from "@/constants/Colors";
@@ -18,19 +18,22 @@ import { deleteDoc, doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { auth, store } from "@/lib/firebase";
 import { useMutation } from "@tanstack/react-query";
 import generateId from "@/util/generateId";
+import { Paystack, paystackProps } from "react-native-paystack-webview";
 
 export default function cart() {
   const { cartData, refetch, status } = useContext(cartContext);
   const [loading, setLoading] = useState(false);
 
+  const paystackWebViewRef = useRef<paystackProps.PayStackRef>();
+
   const checkoutMutation = useMutation({
-    mutationFn: async function () {
+    mutationFn: async function (ref: string) {
       const products = cartData.map((item) => ({
         productId: item.product_id,
         quantity: item.quantity,
       }));
 
-      await setDoc(doc(store, "orders", generateId(10)), {
+      await setDoc(doc(store, "orders", ref), {
         userId: auth.currentUser?.uid,
         email: auth.currentUser?.email,
         products,
@@ -54,7 +57,7 @@ export default function cart() {
 
       refetch();
     },
-    onError: function () {
+    onError: function (err) {
       Alert.alert("Error", "Failed to checkout");
     },
   });
@@ -71,8 +74,8 @@ export default function cart() {
       },
       {
         text: "Checkout",
-        onPress: async function () {
-          checkoutMutation.mutate();
+        onPress: function () {
+          paystackWebViewRef.current?.startTransaction();
         },
       },
     ]);
@@ -179,6 +182,20 @@ export default function cart() {
         </View>
       )}
 
+      <Paystack
+        paystackKey="pk_test_a0760bd20edc7c88c392dd43caab1c3a010351ce"
+        billingEmail={auth.currentUser?.email || ""}
+        amount={cartData.reduce((acc, item) => acc + (item.price * item.quantity), 0)}
+        onCancel={(e) => {
+          // handle response here
+        }}
+        onSuccess={(res: any) => {
+          // handle response here
+          checkoutMutation.mutate(res.transactionRef.reference || generateId(10));
+        }}
+        ref={paystackWebViewRef as any}
+      />
+
       <FlatList
         data={cartData}
         ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
@@ -219,7 +236,11 @@ export default function cart() {
         onPress={checkout}
       >
         <Text style={{ color: "white", textAlign: "center" }}>
-          {checkoutMutation.isPending ? <ActivityIndicator size="small" color={"white"} /> : "Checkout"}
+          {checkoutMutation.isPending ? (
+            <ActivityIndicator size="small" color={"white"} />
+          ) : (
+            "Checkout"
+          )}
         </Text>
       </TouchableOpacity>
     </View>
